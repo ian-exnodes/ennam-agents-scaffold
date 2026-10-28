@@ -231,6 +231,15 @@ const REGISTRY: Record<string, ProfileDef> = {
     // See mem:decisions/automation-profile-v1.15.
     minClaudeCodeVersion: '2.1.246',
   },
+  statusbar: {
+    name: 'statusbar',
+    description: 'Add-on — statusbar plugin: a live status line under the prompt (context, 5h/7d limits, tokens, cost, branch). Enabled via .claude/settings.json; composes onto any role.',
+    templateDir: path.join(TEMPLATES, 'statusbar'),
+    extraMcp: [],
+    augmentation: true,
+    // Older versions install the plugin but draw nothing (no plugin function hooks). Warn-only.
+    minClaudeCodeVersion: '2.1.290',
+  },
 };
 
 export function getProfile(name: string): ProfileDef {

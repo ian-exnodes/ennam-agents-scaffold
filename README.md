@@ -82,7 +82,7 @@ flowchart TD
 
 > The diagram above renders on GitHub. On npmjs.com, the mermaid code block is shown verbatim — open this README on GitHub for the rendered flowchart.
 
-After any guided role, the wizard asks **"Add Claude Code automation guidance?"** (default: No) — see [Add-ons](#add-ons-compose-onto-any-role).
+After any guided role, the wizard asks **"Add Claude Code automation guidance?"** then **"Add statusbar?"** (both default: No) — see [Add-ons](#add-ons-compose-onto-any-role).
 
 ## Profiles
 
@@ -152,9 +152,11 @@ Reached from the wizard via the **Executive / Leadership** role (sub-selects CEO
 | Profile | Purpose | Extra MCP | Requires Claude Code |
 |---|---|---|---|
 | `automation` | Claude Code automation guidance — `ennam-automation` skill (`/goal`, `/loop`, schedules, headless `claude -p`), a report-only `.claude/loop.md`, runbook. Guidance only: no settings, hooks, MCP or CLAUDE.md section. | — | >= 2.1.246 (warns if older) |
+| `statusbar` | [statusbar](https://github.com/ian-exnodes/statusbar) plugin — a live status line under the prompt (context, 5h/7d limits, tokens, cost, branch). Adds its marketplace and `enabledPlugins` entry to `.claude/settings.json`; Claude Code asks you to trust it on the next start. Nothing else changes. | — | >= 2.1.290 (warns if older; older versions show nothing) |
 
 ```bash
 npx @ennamjsc/agents-scaffold next automation     # any role + automation
+npx @ennamjsc/agents-scaffold next statusbar      # any role + statusbar
 ```
 
 An add-on never changes the role it is added to: `hr automation` installs HR exactly as `hr` alone does (same `CLAUDE.md`, doc-first `AGENTS.md`, `people-lifecycle` workflow, settings) plus the add-on's files.

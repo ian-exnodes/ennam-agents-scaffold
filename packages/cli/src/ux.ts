@@ -62,6 +62,10 @@ export async function printNextSteps(profile: ProfileDef, result: ExecuteResult,
     steps.push(`Goals and loops run on your Anthropic account until they stop — always bound a goal ("… or stop after 20 turns"). Requires Claude Code >= ${getProfile('automation').minClaudeCodeVersion} (preflight warns if behind).`);
   }
 
+  if (selected.includes('statusbar')) {
+    steps.push(`statusbar enabled in .claude/settings.json (marketplace ian-exnodes/statusbar). On your next \`claude\` start, trust the marketplace and the status line appears under the prompt. Requires Claude Code >= ${getProfile('statusbar').minClaudeCodeVersion}: older versions install it but show nothing (preflight warns if behind).`);
+  }
+
   // Profile-specific prereq + post-install reminders (game-unity has the heaviest setup —
   // two extra runtimes (Python+uv for Unity MCP, ADB for build/deploy) plus a Tripo3D
   // commercial-tier license gate. Surface loudly per Rule 12 — silent default = bad UX.

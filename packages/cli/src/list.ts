@@ -37,6 +37,7 @@ const PROFILE_ROLE: Record<string, string> = {
   'agent-org': 'Agent-Org',
   // v1.15 — offered by the wizard after any role (and in compose), not as a role itself.
   automation: 'Add-on',
+  statusbar: 'Add-on',
 };
 
 export interface CatalogEntry {

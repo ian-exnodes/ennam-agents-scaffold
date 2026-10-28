@@ -156,13 +156,18 @@ export async function runWizard(cwd: string = process.cwd()): Promise<string[]> 
   }
 
   const profile = await chooseSingleProfile();
-  // v1.15 — opt-in add-on after any guided role. Compose mode already lists it.
+  // v1.15 — opt-in add-ons after any guided role. Compose mode already lists them.
   const addAutomation = await confirm({
     message: 'Add Claude Code automation guidance? (/goal, /loop, schedules, headless runs — guidance only, no settings changes)',
     initialValue: false,
   });
   if (isCancel(addAutomation)) { cancel('Aborted.'); process.exit(1); }
-  return addAutomation === true ? [profile, 'automation'] : [profile];
+  const addStatusbar = await confirm({
+    message: 'Add statusbar? (live status line under the prompt: context, 5h/7d limits, tokens, cost — enables the plugin in .claude/settings.json)',
+    initialValue: false,
+  });
+  if (isCancel(addStatusbar)) { cancel('Aborted.'); process.exit(1); }
+  return [profile, ...(addAutomation === true ? ['automation'] : []), ...(addStatusbar === true ? ['statusbar'] : [])];
 }
 
 /** The original guided single-role flow. Returns exactly one profile name. */

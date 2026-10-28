@@ -87,9 +87,16 @@ describe('add-on overlay contract (fail loud, Rule 12)', () => {
       expect(paths).toEqual([...paths].sort((a, b) => a.localeCompare(b)));
     });
 
-    it(`${label}: throws when an add-on ships a partial`, async () => {
-      const addOn = await fakeAddOn({ '.claude/settings.json.partial.hbs': '{}' });
+    it(`${label}: throws when an add-on ships a partial other than settings.json`, async () => {
+      const addOn = await fakeAddOn({ '.mcp.json.partial.hbs': '{}' });
       await expect(enumerateProfiles([...roles.map(getProfile), addOn])).rejects.toThrow(/must not ship partials/);
+    });
+
+    it(`${label}: merges an add-on settings.json partial onto the role's settings`, async () => {
+      const entries = await enumerateProfiles([...roles.map(getProfile), await fakeAddOn({ '.claude/settings.json.partial.hbs': '{}' })]);
+      const settings = entries.find(e => e.relPath === '.claude/settings.json');
+      expect(settings?.extraSrcList?.at(-1)).toMatch(/settings\.json\.partial\.hbs$/);
+      expect(entries.map(e => e.relPath)).not.toContain('.claude/settings.json.partial.hbs');
     });
 
     it(`${label}: throws when an add-on ships a path the install already has (_shared AGENTS.md)`, async () => {

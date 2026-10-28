@@ -152,14 +152,22 @@ export async function enumerateFiles(profile: ProfileDef, opts: EnumerateOptions
 
 /**
  * v1.15 — add the static files of add-on (augmentation) profiles on top of the roles'
- * entries. Add-ons ship guidance files only: a partial (CLAUDE/.mcp/settings) or a path
- * the install already has (role OR _shared) would otherwise be silently merged or
- * shadowed, so both are contract violations → fail loud (Rule 12).
+ * entries. Add-ons ship guidance files plus at most a settings.json partial: any other
+ * partial (CLAUDE/.mcp) or a path the install already has (role OR _shared) would
+ * otherwise be silently merged or shadowed, so both are contract violations → fail loud (Rule 12).
  */
 async function overlayAddOns(entries: FileEntry[], addOns: ProfileDef[]): Promise<FileEntry[]> {
   const taken = new Set(entries.map(e => e.relPath));
+  const settings = entries.find(e => e.relPath === '.claude/settings.json');
   for (const addOn of addOns) {
     for (const { src, rel } of await collect(addOn.templateDir)) {
+      // statusbar enables a plugin, so a settings partial is the one merge an add-on may
+      // ship: it deep-merges onto the role's settings.json the same way a compose does (#25).
+      if (rel === '.claude/settings.json.partial.hbs' && settings) {
+        settings.extraSrcList = [...(settings.extraSrcList ?? (settings.extraSrcAbs ? [settings.extraSrcAbs] : [])), src];
+        settings.extraSrcAbs = undefined;
+        continue;
+      }
       if (src.endsWith('.partial.hbs')) {
         throw new Error(`Add-on profile "${addOn.name}" must not ship partials (found ${rel}).`);
       }

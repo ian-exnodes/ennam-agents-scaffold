@@ -31,6 +31,7 @@ const ALL_PROFILES = [
   'qa-automation',
   'react',
   'react-native',
+  'statusbar',
   'tech-writer',
 ] as const;
 
@@ -73,7 +74,7 @@ describe('profiles', () => {
 
   it('no other profile declares minClaudeCodeVersion (infra is opt-in per profile; automation pinned in automation-profile.test)', () => {
     for (const name of ALL_PROFILES) {
-      if (name === 'agent-org' || name === 'automation') continue;
+      if (name === 'agent-org' || name === 'automation' || name === 'statusbar') continue;
       expect(getProfile(name).minClaudeCodeVersion).toBeUndefined();
     }
   });

@@ -12,7 +12,8 @@ const CANCEL = vi.hoisted(() => Symbol('clack-cancel'));
 vi.mock('@clack/prompts', () => ({
   select: vi.fn(async () => answers.shift()),
   multiselect: vi.fn(async (opts: { options: Array<{ value: string }> }) => { multiselectOptions.push(...opts.options.map(o => o.value)); return answers.shift(); }),
-  confirm: vi.fn(async (opts: { initialValue?: boolean }) => { confirmCalls.push(opts); return confirmAnswer; }),
+  // An array answers the add-on questions in order (automation, statusbar); a single value answers all.
+  confirm: vi.fn(async (opts: { initialValue?: boolean }) => { confirmCalls.push(opts); return Array.isArray(confirmAnswer) ? confirmAnswer.shift() : confirmAnswer; }),
   isCancel: (v: unknown) => v === CANCEL,
   cancel: vi.fn(),
   log: { info: vi.fn() },
@@ -35,15 +36,38 @@ describe('wizard — automation add-on', () => {
 
   it('adds automation to the guided role when the user says yes', async () => {
     answers.push('single', 'Developer', 'Existing repository', 'Next.js');
-    confirmAnswer = true;
+    confirmAnswer = [true, false];
     expect(await runWizard('/tmp/x')).toEqual(['next', 'automation']);
+  });
+
+  it('adds statusbar to the guided role when the user says yes', async () => {
+    answers.push('single', 'HR');
+    confirmAnswer = [false, true];
+    expect(await runWizard('/tmp/x')).toEqual(['hr', 'statusbar']);
+  });
+
+  it('adds both add-ons, automation first', async () => {
+    answers.push('single', 'HR');
+    confirmAnswer = true;
+    expect(await runWizard('/tmp/x')).toEqual(['hr', 'automation', 'statusbar']);
   });
 
   it('keeps the role alone when the user declines — and No is the default', async () => {
     answers.push('single', 'HR');
     confirmAnswer = false;
     expect(await runWizard('/tmp/x')).toEqual(['hr']);
-    expect(confirmCalls[0]?.initialValue).toBe(false);
+    expect(confirmCalls.map(c => c.initialValue)).toEqual([false, false]);
+  });
+
+  it('Ctrl+C at the statusbar question aborts (exit 1)', async () => {
+    answers.push('single', 'HR');
+    confirmAnswer = [false, CANCEL];
+    const exit = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => { throw new Error(`exit ${code}`); }) as never);
+    try {
+      await expect(runWizard('/tmp/x')).rejects.toThrow('exit 1');
+    } finally {
+      exit.mockRestore();
+    }
   });
 
   it('Ctrl+C at the automation question aborts (exit 1) instead of installing anything', async () => {
